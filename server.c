@@ -73,22 +73,117 @@ int process_user_query_request(int acceptfd,MSG *msg)
 
 int process_admin_modify_request(int acceptfd,MSG *msg)
 {
+	char *errmsg;
+	char datetime[256];
+	char buff[256];
+	int num;
+	time_t now;
+	struct tm *tm_now;
 	printf("------------%s-----------%d.\n",__func__,__LINE__);
+	num = 1004;
+	sprintf(buff, "update usrinfo set staffno = %d where staffno = 1005;", num);
+	printf("%s\n", buff);
+	if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
+		printf("%s.\n",errmsg);
+	} else {
+		printf("add user success.\n");
+	}
+	/*************写日志*****************/
+	time(&now);
+	tm_now = localtime(&now);
+	sprintf(datetime, "%04d-%02d-%02d %02d:%02d:%02d",tm_now->tm_year+1900, tm_now->tm_mon+1, tm_now->tm_mday, tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec);
+	sprintf(buff, "insert into historyinfo values('%s', 'admin','修改: %s');", datetime, msg->info.name);
+	printf("%s\n", buff);
+	if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
+		printf("%s.\n",errmsg);
+	} else {
+		printf("add log success.\n");
+	}
 
 }
 
 
 int process_admin_adduser_request(int acceptfd,MSG *msg)
 {
+	char *errmsg;
+	char datetime[256];
+	char buff[256];
+	time_t now;
+	struct tm *tm_now;
 	printf("------------%s-----------%d.\n",__func__,__LINE__);
+	//接受客户端响应
+	recv(acceptfd, msg, sizeof(MSG), 0);
+	printf("msg->recvmsg :%s\n",msg->recvmsg);
+	strcpy(msg->recvmsg,"Server2: add user OK");
+	send(acceptfd,msg,sizeof(MSG),0);
+	/*****************************************************/
+	printf("No: %d\n", msg->info.no);
+	printf("Type: %d\n", msg->info.usertype);
+	printf("Name: %s\n", msg->info.name);
+	printf("Passwd: %s\n", msg->info.passwd);
+	printf("Age: %d\n", msg->info.age);
+	printf("Phone: %s\n", msg->info.phone);
+	printf("Addr: %s\n", msg->info.addr);
+	printf("Work: %s\n", msg->info.work);
+	printf("Date: %s\n", msg->info.date);
+	printf("Level: %d\n", msg->info.level);
+	printf("Salary: %.2f\n", msg->info.salary);
+	/*****************************************************/
 
+	sprintf(buff, "insert into usrinfo values(%d, %d, '%s', '%s', %d, '%s', '%s', '%s', '%s', %d, %.2f);", \
+			msg->info.no, msg->info.usertype, msg->info.name, msg->info.passwd, msg->info.age, msg->info.phone, \
+			msg->info.addr, msg->info.work, msg->info.date, msg->info.level, msg->info.salary);
+	//sprintf(buff, "insert into usrinfo(staffno, name) values(%d, '%s');", msg->info.no, msg->info.name);
+	printf("%s\n", buff);
+	if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
+		printf("%s.\n",errmsg);
+	} else {
+		printf("add user success.\n");
+	}
+	/*************写日志*****************/
+	time(&now);
+	tm_now = localtime(&now);
+	sprintf(datetime, "%04d-%02d-%02d %02d:%02d:%02d",tm_now->tm_year+1900, tm_now->tm_mon+1, tm_now->tm_mday, tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec);
+	sprintf(buff, "insert into historyinfo values('%s', 'admin','增加新用户[%s]');", datetime, msg->info.name);
+	printf("%s\n", buff);
+	if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
+		printf("%s.\n",errmsg);
+	} else {
+		printf("add log success.\n");
+	}
 }
 
 
 
 int process_admin_deluser_request(int acceptfd,MSG *msg)
 {
+	char *errmsg;
+	char datetime[256];
+	char buff[256];
+	int num;
+	time_t now;
+	struct tm *tm_now;
 	printf("------------%s-----------%d.\n",__func__,__LINE__);
+	/*************删除用户*****************/
+	num = 1005;
+	sprintf(buff, "delete from usrinfo where staffno=%d;", num);
+	printf("%s\n", buff);
+	if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
+		printf("%s.\n",errmsg);
+	} else {
+		printf("add user success.\n");
+	}
+	/*************写日志*****************/
+	time(&now);
+	tm_now = localtime(&now);
+	sprintf(datetime, "%04d-%02d-%02d %02d:%02d:%02d",tm_now->tm_year+1900, tm_now->tm_mon+1, tm_now->tm_mday, tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec);
+	sprintf(buff, "insert into historyinfo values('%s', 'admin','删除工号[%d]');", datetime, num);
+	printf("%s\n", buff);
+	if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
+		printf("%s.\n",errmsg);
+	} else {
+		printf("add log success.\n");
+	}
 
 }
 
@@ -96,12 +191,53 @@ int process_admin_deluser_request(int acceptfd,MSG *msg)
 int process_admin_query_request(int acceptfd,MSG *msg)
 {
 	printf("------------%s-----------%d.\n",__func__,__LINE__);
+	printf("14\n");
 
 }
 
 int process_admin_history_request(int acceptfd,MSG *msg)
 {
+	char *errmsg = NULL;
+	char **resultp = NULL;
+	char datetime[256];
+	char buff[256];
+	int nrow, ncolumn;
+	time_t now;
+	struct tm *tm_now;
 	printf("------------%s-----------%d.\n",__func__,__LINE__);
+	/*************查询日志*****************/
+	//if (0 != sqlite3_get_table(db, "select * from usrinfo;", &resultp, &nrow, 
+	if (0 != sqlite3_get_table(db, "select * from historyinfo;", &resultp, &nrow, \
+				&ncolumn, &errmsg))
+	{
+		fprintf(stderr, "get table: %s\n", errmsg);
+		return -1;
+	}
+	printf("==================================================\n");
+	printf("表格共%d 记录!\n", nrow);
+	printf("表格共%d 列!\n", ncolumn);
+	int i, j, count = 0;
+	for (i = 0; i < nrow+1; i++)
+	{
+		for (j = 0; j < ncolumn; j++)
+		{
+			printf("%-20s", resultp[count++]);
+		}
+		printf("\n");
+	}
+	printf("==================================================\n");
+
+	/*************写日志*****************/
+	time(&now);
+	tm_now = localtime(&now);
+	sprintf(datetime, "%04d-%02d-%02d %02d:%02d:%02d",tm_now->tm_year+1900, tm_now->tm_mon+1, tm_now->tm_mday, tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec);
+	sprintf(buff, "insert into historyinfo values('%s', 'admin','查询日志');", datetime);
+	printf("%s\n", buff);
+	if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
+		printf("%s.\n",errmsg);
+	} else {
+		printf("add log success.\n");
+	}
 
 }
 
@@ -118,38 +254,38 @@ int process_client_request(int acceptfd,MSG *msg)
 	printf("------------%s-----------%d.\n",__func__,__LINE__);
 	switch (msg->msgtype)
 	{
-		case USER_LOGIN:
-		case ADMIN_LOGIN:
-			process_user_or_admin_login_request(acceptfd,msg);
-			break;
-		case USER_MODIFY:
-			process_user_modify_request(acceptfd,msg);
-			break;
-		case USER_QUERY:
-			process_user_query_request(acceptfd,msg);
-			break;
-		case ADMIN_MODIFY:
-			process_admin_modify_request(acceptfd,msg);
-			break;
+	case USER_LOGIN:
+	case ADMIN_LOGIN:
+		process_user_or_admin_login_request(acceptfd,msg);
+		break;
+	case USER_MODIFY:
+		process_user_modify_request(acceptfd,msg);
+		break;
+	case USER_QUERY:
+		process_user_query_request(acceptfd,msg);
+		break;
+	case ADMIN_MODIFY:
+		process_admin_modify_request(acceptfd,msg);
+		break;
 
-		case ADMIN_ADDUSER:
-			process_admin_adduser_request(acceptfd,msg);
-			break;
+	case ADMIN_ADDUSER:
+		process_admin_adduser_request(acceptfd,msg);
+		break;
 
-		case ADMIN_DELUSER:
-			process_admin_deluser_request(acceptfd,msg);
-			break;
-		case ADMIN_QUERY:
-			process_admin_query_request(acceptfd,msg);
-			break;
-		case ADMIN_HISTORY:
-			process_admin_history_request(acceptfd,msg);
-			break;
-		case QUIT:
-			process_client_quit_request(acceptfd,msg);
-			break;
-		default:
-			break;
+	case ADMIN_DELUSER:
+		process_admin_deluser_request(acceptfd,msg);
+		break;
+	case ADMIN_QUERY:
+		process_admin_query_request(acceptfd,msg);
+		break;
+	case ADMIN_HISTORY:
+		process_admin_history_request(acceptfd,msg);
+		break;
+	case QUIT:
+		process_client_quit_request(acceptfd,msg);
+		break;
+	default:
+		break;
 	}
 
 }
@@ -196,17 +332,17 @@ int main(int argc, const char *argv[])
 	}
 	printf("sockfd :%d.\n",sockfd); 
 
-	
+
 	/*优化4： 允许绑定地址快速重用 */
 	int b_reuse = 1;
 	setsockopt (sockfd, SOL_SOCKET, SO_REUSEADDR, &b_reuse, sizeof (int));
-	
+
 	//填充网络结构体
 	memset(&serveraddr,0,sizeof(serveraddr));
 	memset(&clientaddr,0,sizeof(clientaddr));
 	serveraddr.sin_family = AF_INET;
-//	serveraddr.sin_port   = htons(atoi(argv[2]));
-//	serveraddr.sin_addr.s_addr = inet_addr(argv[1]);
+	//	serveraddr.sin_port   = htons(atoi(argv[2]));
+	//	serveraddr.sin_addr.s_addr = inet_addr(argv[1]);
 	serveraddr.sin_port   = htons(5001);
 	serveraddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
@@ -243,12 +379,14 @@ int main(int argc, const char *argv[])
 		tempfds = readfds;
 		//记得重新添加
 		retval =select(nfds + 1, &tempfds, NULL,NULL,NULL);
+		printf("00\n");
 		//判断是否是集合里关注的事件
 		for(i = 0;i < nfds + 1; i ++){
 			if(FD_ISSET(i,&tempfds)){
 				if(i == sockfd){
 					//数据交互 
 					acceptfd = accept(sockfd,(struct sockaddr *)&clientaddr,&cli_len);
+					printf("01\n");
 					if(acceptfd == -1){
 						printf("acceptfd failed.\n");
 						exit(-1);
@@ -258,6 +396,7 @@ int main(int argc, const char *argv[])
 					nfds = nfds > acceptfd ? nfds : acceptfd;
 				}else{
 					recvbytes = recv(i,&msg,sizeof(msg),0);
+					printf("02\n");
 					printf("msg.type :%#x.\n",msg.msgtype);
 					if(recvbytes == -1){
 						printf("recv failed.\n");
@@ -285,10 +424,10 @@ int main(int argc, const char *argv[])
 
 
 #if 0
-					//tid_data.acceptfd = acceptfd;   //暂时不使用这种方式
-					//tid_data.state	  = 1;
-					//tid_data.thread   = thread[tid++];	
-					//pthread_create(&tid_data.thread, NULL,client_request_handler,(void *)&tid_data);
+//tid_data.acceptfd = acceptfd;   //暂时不使用这种方式
+//tid_data.state	  = 1;
+//tid_data.thread   = thread[tid++];	
+//pthread_create(&tid_data.thread, NULL,client_request_handler,(void *)&tid_data);
 #endif 
 
 #if 0
