@@ -1,0 +1,79 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ADMIN	common.h	46;"	d
+ADMIN_ADDUSER	common.h	38;"	d
+ADMIN_DELUSER	common.h	39;"	d
+ADMIN_HISTORY	common.h	41;"	d
+ADMIN_LOGIN	common.h	36;"	d
+ADMIN_MODIFY	common.h	37;"	d
+ADMIN_QUERY	common.h	40;"	d
+DATALEN	common.h	50;"	d
+MSG	common.h	/^}MSG;$/;"	t	typeref:struct:__anon1
+NAMELEN	common.h	49;"	d
+QUIT	common.h	43;"	d
+STAFF_DATABASE	common.h	28;"	d
+USER	common.h	47;"	d
+USER_LOGIN	common.h	31;"	d
+USER_MODIFY	common.h	32;"	d
+USER_QUERY	common.h	33;"	d
+_COMMON_H_	common.h	9;"	d
+acceptfd	common.h	/^	int acceptfd;$/;"	m	struct:thread_data
+addr	common.h	/^	char addr[DATALEN]; \/\/ 地址$/;"	m	struct:staff_info
+admin_menu	client.c	/^void admin_menu(int sockfd,MSG *msg)$/;"	f
+admin_or_user_login	client.c	/^int admin_or_user_login(int sockfd,MSG *msg)$/;"	f
+age	common.h	/^	int  age; 			\/\/ 年龄$/;"	m	struct:staff_info
+data	common.h	/^	thread_data_t data;$/;"	m	struct:thread_node
+date	common.h	/^	char date[DATALEN];	\/\/入职年月$/;"	m	struct:staff_info
+db	server.c	/^sqlite3 *db;  \/\/仅服务器使用$/;"	v
+do_admin_adduser	client.c	/^void do_admin_adduser(int sockfd,MSG *msg)\/\/管理员添加用户$/;"	f
+do_admin_deluser	client.c	/^void do_admin_deluser(int sockfd,MSG *msg)\/\/管理员删除用户$/;"	f
+do_admin_history	client.c	/^void do_admin_history (int sockfd,MSG *msg)$/;"	f
+do_admin_modification	client.c	/^void do_admin_modification(int sockfd,MSG *msg)\/\/管理员修改$/;"	f
+do_admin_query	client.c	/^void do_admin_query(int sockfd,MSG *msg)$/;"	f
+do_login	client.c	/^int do_login(int sockfd)$/;"	f
+do_user_modification	client.c	/^void do_user_modification(int sockfd,MSG *msg)$/;"	f
+do_user_query	client.c	/^void do_user_query(int sockfd,MSG *msg)$/;"	f
+flags	common.h	/^	int  flags;      \/\/标志位$/;"	m	struct:__anon1
+info	common.h	/^	staff_info_t info;      \/\/员工信息$/;"	m	struct:__anon1
+level	common.h	/^	int level;			\/\/ 等级$/;"	m	struct:staff_info
+linklist	common.h	/^}linklist, *plinklist;$/;"	t	typeref:struct:thread_node
+main	client.c	/^int main(int argc, const char *argv[])$/;"	f
+main	server.c	/^int main(int argc, const char *argv[])$/;"	f
+msg	common.h	/^	MSG *msg; $/;"	m	struct:thread_data
+msgtype	common.h	/^	int  msgtype;     \/\/请求的消息类型$/;"	m	struct:__anon1
+name	common.h	/^	char name[NAMELEN];	\/\/姓名$/;"	m	struct:staff_info
+next	common.h	/^	struct thread_node *next;$/;"	m	struct:thread_node	typeref:struct:thread_node::thread_node
+no	common.h	/^	int  no; 			\/\/员工编号$/;"	m	struct:staff_info
+passwd	common.h	/^	char passwd[8];			 \/\/登陆密码$/;"	m	struct:__anon1
+passwd	common.h	/^	char passwd[8]; 	\/\/密码$/;"	m	struct:staff_info
+phone	common.h	/^	char phone[NAMELEN];\/\/电话$/;"	m	struct:staff_info
+plinklist	common.h	/^}linklist, *plinklist;$/;"	t	typeref:struct:thread_node
+process_admin_adduser_request	server.c	/^int process_admin_adduser_request(int acceptfd,MSG *msg)$/;"	f
+process_admin_deluser_request	server.c	/^int process_admin_deluser_request(int acceptfd,MSG *msg)$/;"	f
+process_admin_history_request	server.c	/^int process_admin_history_request(int acceptfd,MSG *msg)$/;"	f
+process_admin_modify_request	server.c	/^int process_admin_modify_request(int acceptfd,MSG *msg)$/;"	f
+process_admin_query_request	server.c	/^int process_admin_query_request(int acceptfd,MSG *msg)$/;"	f
+process_client_quit_request	server.c	/^int process_client_quit_request(int acceptfd,MSG *msg)$/;"	f
+process_client_request	server.c	/^int process_client_request(int acceptfd,MSG *msg)$/;"	f
+process_user_modify_request	server.c	/^int process_user_modify_request(int acceptfd,MSG *msg)$/;"	f
+process_user_or_admin_login_request	server.c	/^int process_user_or_admin_login_request(int acceptfd,MSG *msg)$/;"	f
+process_user_query_request	server.c	/^int process_user_query_request(int acceptfd,MSG *msg)$/;"	f
+prvi_data	common.h	/^	void *prvi_data;$/;"	m	struct:thread_data
+recvmsg	common.h	/^	char recvmsg[DATALEN];   \/\/通信的消息$/;"	m	struct:__anon1
+salary	common.h	/^	double salary ;		\/\/ 工资$/;"	m	struct:staff_info
+staff_info	common.h	/^typedef struct staff_info{$/;"	s
+staff_info_t	common.h	/^}staff_info_t;$/;"	t	typeref:struct:staff_info
+state	common.h	/^	int state; \/\/线程状态$/;"	m	struct:thread_data
+thread	common.h	/^	pthread_t thread;$/;"	m	struct:thread_data
+thread_data	common.h	/^typedef struct thread_data{$/;"	s
+thread_data_t	common.h	/^}thread_data_t;$/;"	t	typeref:struct:thread_data
+thread_node	common.h	/^typedef struct thread_node{$/;"	s
+user_menu	client.c	/^void user_menu(int sockfd,MSG *msg)$/;"	f
+username	common.h	/^	char username[NAMELEN];  \/\/姓名$/;"	m	struct:__anon1
+usertype	common.h	/^	int  usertype;  	\/\/ADMIN 1	USER 2	 $/;"	m	struct:staff_info
+usertype	common.h	/^	int  usertype;    \/\/ADMIN 1	USER 2	   $/;"	m	struct:__anon1
+work	common.h	/^	char work[DATALEN]; \/\/职位$/;"	m	struct:staff_info
