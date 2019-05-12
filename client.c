@@ -361,7 +361,7 @@ void do_user_modification(int sockfd,MSG *msg)
 	int n;
 	while(1) {
 		printf("***********请输入要修改的选项(其他信息亲请联系管理员)*********\n");
-		printf("***********	1：家庭住址   2：电话  3：密码  4：退出***********\n");
+		printf("*********** 1.家庭住址   2.电话   3.密码   4.退出 ************\n");
 		printf("**************************************************************\n");
 
 		printf("请输入您的选择（数字）>>");
@@ -370,17 +370,17 @@ void do_user_modification(int sockfd,MSG *msg)
 		switch(n)
 		{
 		case 1:
-			printf("请输入您的住址: ");
+			printf("请输入您的新住址: ");
 			scanf("%s",msg->info.addr);
 			getchar();
 			break;
 		case 2:
-			printf("请输入您的电话: ");
+			printf("请输入您的新电话: ");
 			scanf("%s",msg->info.phone);
 			getchar();
 			break;
 		case 3:
-			printf("请输入您的密码: ");
+			printf("请输入您的新密码: ");
 			scanf("%s",msg->info.passwd);
 			getchar();
 			break;
@@ -396,8 +396,14 @@ void do_user_modification(int sockfd,MSG *msg)
 		if(n>=1 && n<=3) break;
 	}
 	msg->flags = n;
-	msg->msgtype = USER_QUERY;
+	msg->msgtype = USER_MODIFY;
 	send(sockfd, msg, sizeof(MSG), 0);
+	recv(sockfd, msg, sizeof(MSG), 0);
+	if(strcmp(msg->recvmsg, "OK") == 0) {
+		printf("修改个人信息完成\n");
+	} else {
+	printf("msg->recvmsg :%s\n",msg->recvmsg);
+	}
 
 
 

@@ -67,32 +67,42 @@ int process_user_modify_request(int acceptfd,MSG *msg)
 	printf("------------%s-----------%d.\n",__func__,__LINE__);
 	switch(msg->flags) {
 	case 1:
+		sprintf(buff, "update usrinfo set addr = '%s' where name = '%s';", msg->info.addr, msg->username);
 		break;
 	case 2:
+		sprintf(buff, "update usrinfo set phone = '%s' where name = '%s';", msg->info.phone, msg->username);
 		break;
 	case 3:
+		sprintf(buff, "update usrinfo set passwd = '%s' where name = '%s';", msg->info.passwd, msg->username);
 		break;
 	default:
 		break;
 	}
-	num = 1004;
-	sprintf(buff, "update usrinfo set staffno = %d where staffno = 1005;", num);
-	printf("%s\n", buff);
-	if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
-		printf("%s.\n",errmsg);
+	if(msg->flags>=1 && msg->flags<=3) {
+		printf("%s\n", buff);
+		if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
+			printf("%s.\n",errmsg);
+			strcpy(msg->recvmsg, errmsg);
+		} else {
+			printf("modify user success.\n");
+			strcpy(msg->recvmsg, "OK");
+		}
+			send(acceptfd, msg, sizeof(MSG), 0);
+		/*************写日志*****************/
+		time(&now);
+		tm_now = localtime(&now);
+		sprintf(datetime, "%04d-%02d-%02d %02d:%02d:%02d",tm_now->tm_year+1900, tm_now->tm_mon+1, tm_now->tm_mday, tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec);
+		sprintf(buff, "insert into historyinfo values('%s', '%s','修改个人信息');", datetime, msg->username);
+		printf("%s\n", buff);
+		if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
+			printf("%s.\n",errmsg);
+		} else {
+			printf("add log success.\n");
+		}
 	} else {
-		printf("add user success.\n");
-	}
-	/*************写日志*****************/
-	time(&now);
-	tm_now = localtime(&now);
-	sprintf(datetime, "%04d-%02d-%02d %02d:%02d:%02d",tm_now->tm_year+1900, tm_now->tm_mon+1, tm_now->tm_mday, tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec);
-	sprintf(buff, "insert into historyinfo values('%s', 'admin','修改: %s');", datetime, msg->info.name);
-	printf("%s\n", buff);
-	if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
-		printf("%s.\n",errmsg);
-	} else {
-		printf("add log success.\n");
+			printf("command error.\n");
+			strcpy(msg->recvmsg, "FAIL: 修改错误");
+			send(acceptfd, msg, sizeof(MSG), 0);
 	}
 
 }
@@ -146,7 +156,7 @@ int process_user_query_request(int acceptfd,MSG *msg)
 	time(&now);
 	tm_now = localtime(&now);
 	sprintf(datetime, "%04d-%02d-%02d %02d:%02d:%02d",tm_now->tm_year+1900, tm_now->tm_mon+1, tm_now->tm_mday, tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec);
-	sprintf(buff, "insert into historyinfo values('%s', 'user[%s]','查询个人信息');", msg->username, datetime);
+	sprintf(buff, "insert into historyinfo values('%s', 'user[%s]','查询个人信息');",datetime, msg->username);
 	printf("%s\n", buff);
 	if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
 		printf("%s.\n",errmsg);
@@ -359,9 +369,9 @@ int process_admin_query_request(int acceptfd,MSG *msg)
 	printf("------------%s-----------%d.\n",__func__,__LINE__);
 	/************按条件查找*****************/
 	if(msg->flags == 0) {
-	sprintf(buff, "select * from usrinfo where  name='%s';",  msg->info.name);
+		sprintf(buff, "select * from usrinfo where  name='%s';",  msg->info.name);
 	} else {
-	sprintf(buff, "select * from usrinfo;");
+		sprintf(buff, "select * from usrinfo;");
 	}
 	if (0 != sqlite3_get_table(db, buff, &resultp, &nrow, &ncolumn, &errmsg))
 	{
