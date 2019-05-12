@@ -86,9 +86,94 @@ void do_admin_query(int sockfd,MSG *msg)
  ****************************************/
 void do_admin_modification(int sockfd,MSG *msg)//管理员修改
 {
+	int n;
+	/**************************************/
 	printf("------------%s-----------%d.\n",__func__,__LINE__);
-	msg->msgtype = ADMIN_MODIFY;
-	send(sockfd, msg, sizeof(MSG), 0);
+	printf("请输入要修改的工号: ");
+	scanf("%d",&msg->info.no);
+	getchar();
+	/**************************************/
+	while(1) {
+		while(1) {
+			printf("**************************************************************\n");
+			printf("***********请输入要修改的选项(其他信息亲请联系管理员)*********\n");
+			printf("*********** 1.姓名   2.年龄   3.家庭住址   4.电话 ************\n");
+			printf("*********** 5.职位   6.工资   7.入职日期   8.评级 ************\n");
+			printf("*********** 9.密码   10.返回上一层                ************\n");
+			printf("**************************************************************\n");
+
+			printf("请输入您的选择（数字）>>");
+			scanf("%d",&n);
+			getchar();
+			switch(n) {
+			case 1:
+				printf("请输入姓名: ");
+				scanf("%s",msg->info.name);
+				getchar();
+				break;
+			case 2:
+				printf("请输入年龄: ");
+				scanf("%d",&msg->info.age);
+				getchar();
+				break;
+			case 3:
+				printf("请输入住址: ");
+				scanf("%s",msg->info.addr);
+				getchar();
+				break;
+			case 4:
+				printf("请输入电话: ");
+				scanf("%s",msg->info.phone);
+				getchar();
+				break;
+			case 5:
+				printf("请输入职位: ");
+				scanf("%s",msg->info.work);
+				getchar();
+				break;
+			case 6:
+				printf("请输入工资: ");
+				scanf("%lf",&msg->info.salary);
+				getchar();
+				break;
+			case 7:
+				printf("请输入入职日期(YYYY-MM-DD): ");
+				scanf("%s",msg->info.date);
+				getchar();
+				break;
+			case 8:
+				printf("请输入评级: ");
+				scanf("%d",&msg->info.level);
+				getchar();
+				break;
+			case 9:
+				printf("请输入新密码: ");
+				scanf("%s",msg->info.passwd);
+				getchar();
+				break;
+			case 10:
+				//msg->msgtype = QUIT;
+				//send(sockfd, msg, sizeof(MSG), 0);
+				//close(sockfd);
+				//exit(0);
+				return;
+			default:
+				printf("您输入有误，请输入数字\n");
+				break;
+			}
+			if(n>=1 && n<=9) break;
+		}
+		msg->flags = n;
+		msg->msgtype = ADMIN_MODIFY;
+		send(sockfd, msg, sizeof(MSG), 0);
+		recv(sockfd, msg, sizeof(MSG), 0);
+		if(strcmp(msg->recvmsg, "OK") == 0) {
+			printf("修改个人信息完成\n");
+		} else {
+			printf("msg->recvmsg :%s\n",msg->recvmsg);
+			return;
+		}
+	}
 
 
 }
@@ -344,7 +429,7 @@ void do_user_query(int sockfd,MSG *msg)
 		if(msg->flags == 0) break;
 	}
 	printf("================================================================================\n");
-	
+
 
 }
 
@@ -360,52 +445,54 @@ void do_user_modification(int sockfd,MSG *msg)
 	printf("------------%s-----------%d.\n",__func__,__LINE__);
 	int n;
 	while(1) {
-		printf("***********请输入要修改的选项(其他信息亲请联系管理员)*********\n");
-		printf("*********** 1.家庭住址   2.电话   3.密码   4.退出 ************\n");
-		printf("**************************************************************\n");
+		while(1) {
+			printf("**************************************************************\n");
+			printf("***********请输入要修改的选项(其他信息亲请联系管理员)*********\n");
+			printf("*********** 1.家庭住址   2.电话   3.密码   4.退出 ************\n");
+			printf("**************************************************************\n");
 
-		printf("请输入您的选择（数字）>>");
-		scanf("%d",&n);
-		getchar();
-		switch(n)
-		{
-		case 1:
-			printf("请输入您的新住址: ");
-			scanf("%s",msg->info.addr);
+			printf("请输入您的选择（数字）>>");
+			scanf("%d",&n);
 			getchar();
-			break;
-		case 2:
-			printf("请输入您的新电话: ");
-			scanf("%s",msg->info.phone);
-			getchar();
-			break;
-		case 3:
-			printf("请输入您的新密码: ");
-			scanf("%s",msg->info.passwd);
-			getchar();
-			break;
-		case 4:
-			msg->msgtype = QUIT;
-			send(sockfd, msg, sizeof(MSG), 0);
-			close(sockfd);
-			exit(0);
-		default:
-			printf("您输入有误，请输入数字\n");
-			break;
+			switch(n)
+			{
+			case 1:
+				printf("请输入您的新住址: ");
+				scanf("%s",msg->info.addr);
+				getchar();
+				break;
+			case 2:
+				printf("请输入您的新电话: ");
+				scanf("%s",msg->info.phone);
+				getchar();
+				break;
+			case 3:
+				printf("请输入您的新密码: ");
+				scanf("%s",msg->info.passwd);
+				getchar();
+				break;
+			case 4:
+				msg->msgtype = QUIT;
+				send(sockfd, msg, sizeof(MSG), 0);
+				close(sockfd);
+				exit(0);
+			default:
+				printf("您输入有误，请输入数字\n");
+				break;
+			}
+			if(n>=1 && n<=3) break;
 		}
-		if(n>=1 && n<=3) break;
+		msg->flags = n;
+		msg->msgtype = USER_MODIFY;
+		send(sockfd, msg, sizeof(MSG), 0);
+		recv(sockfd, msg, sizeof(MSG), 0);
+		if(strcmp(msg->recvmsg, "OK") == 0) {
+			printf("修改个人信息完成\n");
+		} else {
+			printf("msg->recvmsg :%s\n",msg->recvmsg);
+			return;
+		}
 	}
-	msg->flags = n;
-	msg->msgtype = USER_MODIFY;
-	send(sockfd, msg, sizeof(MSG), 0);
-	recv(sockfd, msg, sizeof(MSG), 0);
-	if(strcmp(msg->recvmsg, "OK") == 0) {
-		printf("修改个人信息完成\n");
-	} else {
-	printf("msg->recvmsg :%s\n",msg->recvmsg);
-	}
-
-
 
 }
 
