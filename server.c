@@ -251,6 +251,7 @@ int process_admin_history_request(int acceptfd,MSG *msg)
 		fprintf(stderr, "get table: %s\n", errmsg);
 		return -1;
 	}
+	/*************把数据发送到客户端*****************/
 	printf("==================================================\n");
 	printf("表格共%d 记录!\n", nrow);
 	printf("表格共%d 列!\n", ncolumn);
@@ -269,7 +270,6 @@ int process_admin_history_request(int acceptfd,MSG *msg)
 		
 	}
 	printf("==================================================\n");
-	/*************把数据发送到客户端*****************/
 
 	/*************写日志*****************/
 	time(&now);

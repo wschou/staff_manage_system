@@ -55,9 +55,13 @@ void do_admin_adduser(int sockfd,MSG *msg)//管理员添加用户
 {		
 	time_t now;
 	struct tm *tm_now;
+	char a[64];
 	printf("------------%s-----------%d.\n",__func__,__LINE__);
-	printf("测试添加新用户\n");
+	/**************************************/
 	memset(&msg->info, 0, sizeof(staff_info_t));
+	/**************************************/
+#if 0
+	printf("测试添加新用户\n");
 	
 	msg->info.no = 1005;
 	msg->info.usertype = USER;
@@ -74,6 +78,7 @@ void do_admin_adduser(int sockfd,MSG *msg)//管理员添加用户
 	msg->info.level = 0;
 	msg->info.salary = 7998.02;
 	printf("员工信息结构体填充完成\n");
+#endif
 #if 0
 	time(&now);
 	//printf("The number of seconds since January 1, 1970 is  %ld\n",now);
@@ -89,14 +94,71 @@ void do_admin_adduser(int sockfd,MSG *msg)//管理员添加用户
 	sprintf(msg->info.date, "%d-%d-%d %d:%d:%d\n",tm_now->tm_year+1900, tm_now->tm_mon+1, tm_now->tm_mday, tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec);
 	printf("datetime: %s\n", msg->info.date);
 #endif
-	msg->msgtype  = ADMIN_ADDUSER;
-	msg->usertype = ADMIN;
-	strcpy(msg->recvmsg, "Client: add user");
-	//发送添加请求
-	send(sockfd, msg, sizeof(MSG), 0);
-	//接受服务器响应
-	recv(sockfd, msg, sizeof(MSG), 0);
-	printf("msg->recvmsg :%s\n",msg->recvmsg);
+	/**************************************/
+	do {
+		printf("请输入工号: ");
+		scanf("%d",&msg->info.no);
+		getchar();
+		printf("您输入的工号是: %d\n", msg->info.no);
+		printf("工号信息一旦录入无法更改, 请确认输入是否正确(Y/N) ");
+		scanf("%s",a);
+		getchar();
+		if(strcmp(a,"Y")!=0 && strcmp(a,"y")!=0) {
+			printf("退出\n");
+			break;
+		}
+		printf("请输入员工登录名: ");
+		scanf("%s",msg->info.name);
+		getchar();
+		printf("请输入员工登录密码: ");
+		scanf("%s",msg->info.passwd);
+		getchar();
+		printf("请输入员工年龄: ");
+		scanf("%d",&msg->info.age);
+		getchar();
+		printf("请输入员工电话: ");
+		scanf("%s",msg->info.phone);
+		getchar();
+		printf("请输入员工住址: ");
+		scanf("%s",msg->info.addr);
+		getchar();
+		printf("请输入员工职位: ");
+		scanf("%s",msg->info.work);
+		getchar();
+		printf("请输入入职日期: ");
+		scanf("%s",msg->info.date);
+		getchar();
+		printf("请输入员工评级: ");
+		scanf("%d",&msg->info.level);
+		getchar();
+		printf("请输入员工工资: ");
+		scanf("%lf",&msg->info.salary);
+		getchar();
+		printf("是否为管理员(Y/N): ");
+		scanf("%s",a);
+		getchar();
+		if(strcmp(a,"Y")!=0 && strcmp(a,"y")!=0) {
+			msg->info.usertype = USER;
+		} else {
+			msg->info.usertype = ADMIN;
+		}
+		/**************************************/
+		msg->msgtype  = ADMIN_ADDUSER;
+		msg->usertype = ADMIN;
+		strcpy(msg->recvmsg, "Client: add user");
+		//发送添加请求
+		send(sockfd, msg, sizeof(MSG), 0);
+		//接受服务器响应
+		recv(sockfd, msg, sizeof(MSG), 0);
+		printf("msg->recvmsg :%s\n",msg->recvmsg);
+		/**************************************/
+		printf("员工添加成功！是否继续添加员工信息(Y/N): ");
+		scanf("%s",a);
+		getchar();
+		if(strcmp(a,"Y")!=0 && strcmp(a,"y")!=0) {
+			break;
+		}
+	} while(1);
 }
 
 
