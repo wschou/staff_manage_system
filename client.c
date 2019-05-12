@@ -107,7 +107,17 @@ void do_admin_adduser(int sockfd,MSG *msg)//管理员添加用户
 			printf("退出\n");
 			break;
 		}
-		printf("请输入员工登录名: ");
+		msg->msgtype  = ADMIN_ADDUSER;
+		msg->usertype = ADMIN;
+		strcpy(msg->recvmsg, "Client: match ID");
+		send(sockfd, msg, sizeof(MSG), 0);
+		recv(sockfd, msg, sizeof(MSG), 0);
+		if(strcmp(msg->recvmsg, "OK") != 0) {
+			printf("msg->recvmsg :%s\n",msg->recvmsg);
+			continue;
+		}
+
+		printf("请输入员工姓名: ");
 		scanf("%s",msg->info.name);
 		getchar();
 		printf("请输入员工登录密码: ");
@@ -171,6 +181,24 @@ void do_admin_deluser(int sockfd,MSG *msg)//管理员删除用户
 {
 	printf("------------%s-----------%d.\n",__func__,__LINE__);
 
+	printf("请输入要删除的员工工号: ");
+	scanf("%d",&msg->info.no);
+	getchar();
+	printf("请输入要删除的员工姓名: ");
+	scanf("%s",msg->info.name);
+	getchar();
+	msg->msgtype = ADMIN_DELUSER;
+	msg->usertype = ADMIN;
+	strcpy(msg->recvmsg, "Client: del user");
+	send(sockfd, msg, sizeof(MSG), 0);
+	recv(sockfd, msg, sizeof(MSG), 0);
+	printf("msg->recvmsg :%s\n",msg->recvmsg);
+	if(strcmp(msg->recvmsg, "OK") == 0) {
+		printf("删除完成\n");
+	} else {
+		printf("工号和姓名不匹配，删除失败！\n");
+	}
+
 }
 
 
@@ -227,13 +255,9 @@ void admin_menu(int sockfd,MSG *msg)
 			do_admin_modification(sockfd,msg);
 			break;
 		case 3:
-			msg->msgtype = ADMIN_ADDUSER;
-			send(sockfd, msg, sizeof(MSG), 0);
 			do_admin_adduser(sockfd,msg);
 			break;
 		case 4:
-			msg->msgtype = ADMIN_DELUSER;
-			send(sockfd, msg, sizeof(MSG), 0);
 			do_admin_deluser(sockfd,msg);
 			break;
 		case 5:
