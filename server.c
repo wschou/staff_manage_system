@@ -58,7 +58,42 @@ int process_user_or_admin_login_request(int acceptfd,MSG *msg)
 
 int process_user_modify_request(int acceptfd,MSG *msg)
 {
+	char *errmsg;
+	char datetime[256];
+	char buff[256];
+	int num;
+	time_t now;
+	struct tm *tm_now;
 	printf("------------%s-----------%d.\n",__func__,__LINE__);
+	switch(msg->flags) {
+	case 1:
+		break;
+	case 2:
+		break;
+	case 3:
+		break;
+	default:
+		break;
+	}
+	num = 1004;
+	sprintf(buff, "update usrinfo set staffno = %d where staffno = 1005;", num);
+	printf("%s\n", buff);
+	if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
+		printf("%s.\n",errmsg);
+	} else {
+		printf("add user success.\n");
+	}
+	/*************写日志*****************/
+	time(&now);
+	tm_now = localtime(&now);
+	sprintf(datetime, "%04d-%02d-%02d %02d:%02d:%02d",tm_now->tm_year+1900, tm_now->tm_mon+1, tm_now->tm_mday, tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec);
+	sprintf(buff, "insert into historyinfo values('%s', 'admin','修改: %s');", datetime, msg->info.name);
+	printf("%s\n", buff);
+	if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
+		printf("%s.\n",errmsg);
+	} else {
+		printf("add log success.\n");
+	}
 
 }
 
@@ -66,7 +101,58 @@ int process_user_modify_request(int acceptfd,MSG *msg)
 
 int process_user_query_request(int acceptfd,MSG *msg)
 {
+	char *errmsg = NULL;
+	char **resultp = NULL;
+	char datetime[256];
+	char buff[512];
+	int nrow, ncolumn;
+	time_t now;
+	struct tm *tm_now;
 	printf("------------%s-----------%d.\n",__func__,__LINE__);
+	/************按条件查找*****************/
+	sprintf(buff, "select * from usrinfo where  name='%s';",  msg->username);
+	if (0 != sqlite3_get_table(db, buff, &resultp, &nrow, &ncolumn, &errmsg))
+	{
+		fprintf(stderr, "get table: %s\n", errmsg);
+		return -1;
+	}
+	printf("==================================================\n");
+	printf("表格共%d 记录!\n", nrow);
+	printf("表格共%d 列!\n", ncolumn);
+	int i, j, count = 0;
+	for (i = 0; i < nrow+1; i++)
+	{
+		memset(msg->recvmsg, 0, sizeof(msg->recvmsg));
+		for (j = 0; j < ncolumn; j++)
+		{
+			//printf("%-10s  ", resultp[count++]);
+			sprintf(buff, "%-6s  ", resultp[count++]);
+			strcat(msg->recvmsg, buff);
+		}
+		printf("\n");
+		printf("%s\n", msg->recvmsg);
+		msg->flags = (i==nrow?0:1);
+		if(i > 0) {
+			send(acceptfd, msg, sizeof(MSG), 0);
+		}
+	}
+	if(nrow == 0) {
+		msg->flags = 0;
+		send(acceptfd, msg, sizeof(MSG), 0);
+	}
+	printf("==================================================\n");
+
+	/*************写日志*****************/
+	time(&now);
+	tm_now = localtime(&now);
+	sprintf(datetime, "%04d-%02d-%02d %02d:%02d:%02d",tm_now->tm_year+1900, tm_now->tm_mon+1, tm_now->tm_mday, tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec);
+	sprintf(buff, "insert into historyinfo values('%s', 'user[%s]','查询个人信息');", msg->username, datetime);
+	printf("%s\n", buff);
+	if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
+		printf("%s.\n",errmsg);
+	} else {
+		printf("add log success.\n");
+	}
 
 }
 
@@ -266,14 +352,18 @@ int process_admin_query_request(int acceptfd,MSG *msg)
 	char *errmsg = NULL;
 	char **resultp = NULL;
 	char datetime[256];
-	char buff[256];
+	char buff[512];
 	int nrow, ncolumn;
 	time_t now;
 	struct tm *tm_now;
 	printf("------------%s-----------%d.\n",__func__,__LINE__);
 	/************按条件查找*****************/
-	if (0 != sqlite3_get_table(db, "select * from usrinfo where staffno = 1005;", &resultp, &nrow, 
-				&ncolumn, &errmsg))
+	if(msg->flags == 0) {
+	sprintf(buff, "select * from usrinfo where  name='%s';",  msg->info.name);
+	} else {
+	sprintf(buff, "select * from usrinfo;");
+	}
+	if (0 != sqlite3_get_table(db, buff, &resultp, &nrow, &ncolumn, &errmsg))
 	{
 		fprintf(stderr, "get table: %s\n", errmsg);
 		return -1;
@@ -284,11 +374,23 @@ int process_admin_query_request(int acceptfd,MSG *msg)
 	int i, j, count = 0;
 	for (i = 0; i < nrow+1; i++)
 	{
+		memset(msg->recvmsg, 0, sizeof(msg->recvmsg));
 		for (j = 0; j < ncolumn; j++)
 		{
-			printf("%-10s  ", resultp[count++]);
+			//printf("%-10s  ", resultp[count++]);
+			sprintf(buff, "%-6s  ", resultp[count++]);
+			strcat(msg->recvmsg, buff);
 		}
 		printf("\n");
+		printf("%s\n", msg->recvmsg);
+		msg->flags = (i==nrow?0:1);
+		if(i > 0) {
+			send(acceptfd, msg, sizeof(MSG), 0);
+		}
+	}
+	if(nrow == 0) {
+		msg->flags = 0;
+		send(acceptfd, msg, sizeof(MSG), 0);
 	}
 	printf("==================================================\n");
 
@@ -317,7 +419,6 @@ int process_admin_history_request(int acceptfd,MSG *msg)
 	struct tm *tm_now;
 	printf("------------%s-----------%d.\n",__func__,__LINE__);
 	/*************查询日志*****************/
-	//if (0 != sqlite3_get_table(db, "select * from usrinfo;", &resultp, &nrow, 
 	if (0 != sqlite3_get_table(db, "select * from historyinfo;", &resultp, &nrow, \
 				&ncolumn, &errmsg))
 	{

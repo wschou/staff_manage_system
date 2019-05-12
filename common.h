@@ -47,7 +47,7 @@
 #define USER  1	//用户
 
 #define NAMELEN 16
-#define DATALEN 128
+#define DATALEN 512
 
 /*员工基本信息*/
 typedef struct staff_info{
