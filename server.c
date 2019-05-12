@@ -190,8 +190,46 @@ int process_admin_deluser_request(int acceptfd,MSG *msg)
 
 int process_admin_query_request(int acceptfd,MSG *msg)
 {
+	char *errmsg = NULL;
+	char **resultp = NULL;
+	char datetime[256];
+	char buff[256];
+	int nrow, ncolumn;
+	time_t now;
+	struct tm *tm_now;
 	printf("------------%s-----------%d.\n",__func__,__LINE__);
-	printf("14\n");
+	/************按条件查找*****************/
+	if (0 != sqlite3_get_table(db, "select * from usrinfo where staffno = 1005;", &resultp, &nrow, 
+				&ncolumn, &errmsg))
+	{
+		fprintf(stderr, "get table: %s\n", errmsg);
+		return -1;
+	}
+	printf("==================================================\n");
+	printf("表格共%d 记录!\n", nrow);
+	printf("表格共%d 列!\n", ncolumn);
+	int i, j, count = 0;
+	for (i = 0; i < nrow+1; i++)
+	{
+		for (j = 0; j < ncolumn; j++)
+		{
+			printf("%-10s  ", resultp[count++]);
+		}
+		printf("\n");
+	}
+	printf("==================================================\n");
+
+	/*************写日志*****************/
+	time(&now);
+	tm_now = localtime(&now);
+	sprintf(datetime, "%04d-%02d-%02d %02d:%02d:%02d",tm_now->tm_year+1900, tm_now->tm_mon+1, tm_now->tm_mday, tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec);
+	sprintf(buff, "insert into historyinfo values('%s', 'admin','按条件查找');", datetime);
+	printf("%s\n", buff);
+	if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
+		printf("%s.\n",errmsg);
+	} else {
+		printf("add log success.\n");
+	}
 
 }
 
@@ -219,13 +257,19 @@ int process_admin_history_request(int acceptfd,MSG *msg)
 	int i, j, count = 0;
 	for (i = 0; i < nrow+1; i++)
 	{
+		memset(msg->recvmsg, 0, sizeof(msg->recvmsg));
 		for (j = 0; j < ncolumn; j++)
 		{
-			printf("%-20s", resultp[count++]);
+			sprintf(buff, "%-10s  ", resultp[count++]);
+			strcat(msg->recvmsg, buff);
 		}
-		printf("\n");
+		printf("%s\n", msg->recvmsg);
+		msg->flags = (i==nrow?0:1);
+		send(acceptfd, msg, sizeof(MSG), 0);
+		
 	}
 	printf("==================================================\n");
+	/*************把数据发送到客户端*****************/
 
 	/*************写日志*****************/
 	time(&now);
