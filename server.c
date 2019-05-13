@@ -317,7 +317,7 @@ int process_admin_adduser_request(int acceptfd,MSG *msg)
 	time(&now);
 	tm_now = localtime(&now);
 	sprintf(datetime, "%04d-%02d-%02d %02d:%02d:%02d",tm_now->tm_year+1900, tm_now->tm_mon+1, tm_now->tm_mday, tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec);
-	sprintf(buff, "insert into historyinfo values('%s', 'admin','增加员工[%d]');", datetime, msg->info.no);
+	sprintf(buff, "insert into historyinfo values('%s', '%s','增加员工[%d]');", datetime, msg->username, msg->info.no);
 	printf("%s\n", buff);
 	if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
 		printf("%s.\n",errmsg);
@@ -380,7 +380,7 @@ int process_admin_deluser_request(int acceptfd,MSG *msg)
 		time(&now);
 		tm_now = localtime(&now);
 		sprintf(datetime, "%04d-%02d-%02d %02d:%02d:%02d",tm_now->tm_year+1900, tm_now->tm_mon+1, tm_now->tm_mday, tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec);
-		sprintf(buff, "insert into historyinfo values('%s', 'admin','删除工号[%d]');", datetime, num);
+		sprintf(buff, "insert into historyinfo values('%s', '%s','删除工号[%d]');", datetime, msg->username,  num);
 		printf("%s\n", buff);
 		if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
 			printf("%s.\n",errmsg);
@@ -446,7 +446,7 @@ int process_admin_query_request(int acceptfd,MSG *msg)
 	time(&now);
 	tm_now = localtime(&now);
 	sprintf(datetime, "%04d-%02d-%02d %02d:%02d:%02d",tm_now->tm_year+1900, tm_now->tm_mon+1, tm_now->tm_mday, tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec);
-	sprintf(buff, "insert into historyinfo values('%s', 'admin','按条件查找');", datetime);
+	sprintf(buff, "insert into historyinfo values('%s', '%s','按条件查找');", datetime, msg->username);
 	printf("%s\n", buff);
 	if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
 		printf("%s.\n",errmsg);
@@ -497,7 +497,7 @@ int process_admin_history_request(int acceptfd,MSG *msg)
 	time(&now);
 	tm_now = localtime(&now);
 	sprintf(datetime, "%04d-%02d-%02d %02d:%02d:%02d",tm_now->tm_year+1900, tm_now->tm_mon+1, tm_now->tm_mday, tm_now->tm_hour, tm_now->tm_min, tm_now->tm_sec);
-	sprintf(buff, "insert into historyinfo values('%s', 'admin','查询日志');", datetime);
+	sprintf(buff, "insert into historyinfo values('%s', '%s','查询日志');", datetime, msg->username);
 	printf("%s\n", buff);
 	if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
 		printf("%s.\n",errmsg);
@@ -607,10 +607,10 @@ int main(int argc, const char *argv[])
 	memset(&serveraddr,0,sizeof(serveraddr));
 	memset(&clientaddr,0,sizeof(clientaddr));
 	serveraddr.sin_family = AF_INET;
-	//	serveraddr.sin_port   = htons(atoi(argv[2]));
-	//	serveraddr.sin_addr.s_addr = inet_addr(argv[1]);
-	serveraddr.sin_port   = htons(5001);
-	serveraddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	serveraddr.sin_port   = htons(atoi(argv[2]));
+	serveraddr.sin_addr.s_addr = inet_addr(argv[1]);
+	//serveraddr.sin_port   = htons(5001);
+	//serveraddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
 
 	//绑定网络套接字和网络结构体
