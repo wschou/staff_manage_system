@@ -562,6 +562,7 @@ int main(int argc, const char *argv[])
 	//socket->填充->绑定->监听->等待连接->数据交互->关闭 
 	int sockfd;
 	int acceptfd;
+	char buff[256];
 	ssize_t recvbytes;
 	struct sockaddr_in serveraddr;
 	struct sockaddr_in clientaddr;
@@ -582,6 +583,13 @@ int main(int argc, const char *argv[])
 		printf("%s.\n",errmsg);
 	}else{
 		printf("create usrinfo table success.\n");
+
+		sprintf(buff, "insert into usrinfo values(1000, 0, 'admin', 'admin', 0, '0', '0', '0', '0', 0, 0);");
+		if(sqlite3_exec(db, buff, NULL,NULL,&errmsg)!= SQLITE_OK) {
+			printf("%s.\n",errmsg);
+		} else {
+			printf("add admin success.\n");
+		}
 	}
 
 	if(sqlite3_exec(db,"create table historyinfo(time text,name text,words text);",NULL,NULL,&errmsg)!= SQLITE_OK){
